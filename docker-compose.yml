@@ -1,6 +1,33 @@
 version: '3.8'
 
 services:
+  # Using flink:latest image to create a flink instance.
+  jobmanager:
+    image: flink-app
+    build: 
+      context: .
+    ports:
+      - 8081:8081
+      - 6123:6123
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+      FLINK_PROPERTIES: "jobmanager.rpc.address: jobmanager"
+    command:
+      - jobmanager
+  flink_task:
+    image: flink-app
+    build: 
+      context: .
+    environment:
+      - OB_MANAGER_RPC_ADDRESS=jobmanager
+      - |
+          FLINK_PROPERTIES=
+          jobmanager.rpc.address: jobmanager
+          taskmanager.numberOfTaskSlots: 10
+    command:
+      - taskmanager
+    depends_on:
+      - jobmanager
   # Using confluentinc/cp-zookeeper:latest image to create a zookeeper instance.
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -29,8 +56,53 @@ services:
     image: obsidiandynamics/kafdrop
     environment:
       KAFKA_BROKERCONNECT: "kafka:9092"
-      #JVM_OPTS: "-Xms16M -Xmx512M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     ports:
       - 9000:9000
     depends_on:
       - kafka
+
+  # Using bitnami/postgresql:15 image to create a postgresql instance.
+  # I build from a Dockerfile beacause I need to install  pg_partman and pg_cron extensions.
+  pg:
+    image: event-stream:15
+    build:
+      context: ./postgre
+      dockerfile: ./Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 5432:5432
+
+  app:
+    # /opt/flink/bin/flink run -py app2db.py --jobmanager jobmanager:8081
+    image: flink-app
+    build: 
+      context: .
+    environment: 
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: event-flink
+      SINK_DIR: /sink
+    depends_on:
+      - kafka
+    volumes:
+      - ./:/test
+      - ./jars:/opt/flink/otp
+    entrypoint:
+      - tail
+    command: 
+      - -f
+      - /dev/null
+
+  # job-submitter:
+  #   # /opt/flink/bin/flink run -py app2db.py --jobmanager jobmanager:8081
+  #   image: flink:latest
+  #   command: >
+  #     - -f
+  #     - /dev/null
+  #   volumes:
+  #     - ./:/test
+  #   entrypoint:
+  #     - tail

@@ -8,19 +8,15 @@ faker = Faker()
 
 def get_register():
     return {
-        "id": faker.random_int(),
-        "organization_name": faker.name(),
-        "organization_id": faker.random_int(),
+        "id": faker.uuid4(),
+        "email": faker.email(),
+        "event": faker.random_choices(elements=("click", "view", "purchase"), length=1)[0],
         "time": faker.date_time().isoformat(),
-        "test_case_id": faker.random_int(),
-        "adjust": faker.random_digit(),
-        "info": {
+        "properties": {
             "address": faker.address(),
             "city": faker.city(),
-            "state": faker.state(),
-            "zipcode": faker.zipcode()
-        },
-        "contact": {"name": faker.name(), "email": faker.email()},
+            "ip": faker.ipv4()
+        }
     }
 
 
@@ -31,18 +27,25 @@ def on_send_error(excp):
     print('Having an error', exc_info=excp)
 
 def on_send_success(record_metadata):
-    print(record_metadata.topic,record_metadata.partition,record_metadata.offset)
+    pass
+    # print(record_metadata.topic,record_metadata.partition,record_metadata.offset)
 
 producer = KafkaProducer(
     bootstrap_servers = ['localhost:29092'], # server name
     value_serializer = json_serializer # function callable
     )
-
+event_count = 0
+start_time = time.time()
 while True:
     user = get_register()
-    print(user)
-    # send data to  event-flink kafka topic
     producer.send('event-flink', user).add_callback(on_send_success).add_errback(on_send_error)
     producer.flush()
-    # wait 3 seconds
-    time.sleep(3)
+    
+    event_count += 1
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    
+    if elapsed_time >= 1:
+        print(f"Events sent per second: {event_count}")
+        start_time = current_time
+        event_count = 0
