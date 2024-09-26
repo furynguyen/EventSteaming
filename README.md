@@ -67,8 +67,6 @@ Checking Kafdrop we will see the topic `event-flink` has 4 partitions.
 
 The lag is still high, but it's now distributed across 4 partitions. We'll submit new jobs to reduce the lag further.
 
-![![high level architecture]](./images/app_test_2.png)
-
 Two jobs are running, consuming messages from Kafka. Recheck the lag
 
 ![![high level architecture]](./images/lag_test_2_2.png)
