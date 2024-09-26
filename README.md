@@ -45,9 +45,9 @@ Active the environment
 
     ![![high level architecture]](./images/app_running_test_1.png)
 
-    A submitted job has been ran by Flink cluster. We can check Exception, Time line, Checkpoints to monitor the job.
+    The job is now running on the Flink cluster. You can check for exceptions, view the timeline, and observe checkpoints to monitor the job.
 
-    For it is only run one job therefore the LAG is very high
+    As only one job is running, the Kafka lag may be high
 
     ![![high level architecture]](./images/lag_test_1.png)
 
