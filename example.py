@@ -11,10 +11,6 @@ import pandas as pd
 
 env = StreamExecutionEnvironment.get_execution_environment() 
 
-# env.add_jars("file:///Users/hoai.nguyen/Documents/LAP/EventStreaming/jars/flink-sql-connector-kafka-3.1.0-1.17.jar")
-# env.add_jars("file:///Users/hoai.nguyen/Documents/LAP/EventStreaming/jars/flink-connector-jdbc_2.11-1.14.6.jar")
-# env.add_jars("file:///Users/hoai.nguyen/Documents/LAP/EventStreaming/jars/postgresql-42.7.3.jar")
-
 env.add_jars("file:///test/jars/flink-sql-connector-kafka-3.1.0-1.17.jar")
 env.add_jars("file:///test/jars/flink-connector-kafka-3.2.0-1.19.jar")
 env.add_jars("file:///test/jars/flink-connector-jdbc_2.11-1.14.6.jar")
